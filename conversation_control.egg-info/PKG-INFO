@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: conversation-control
+Version: 0.1.1
+Summary: Este es un paquete de codigo, que busca continuar el control de conversacion, usando la herramienta de langchain
+Home-page: https://zerpatechnology.com/conversation_control
+Author: Jesus Zerpa
+Author-email: jesus26abraham1996@gmail.com
+Keywords: langchain,python
+License-File: LICENSE
