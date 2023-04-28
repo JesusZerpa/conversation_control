@@ -1,7 +1,10 @@
-LICENSE
+LICENSE.txt
+README.md
+setup.cfg
 setup.py
 conversation_control/__init__.py
 conversation_control.egg-info/PKG-INFO
 conversation_control.egg-info/SOURCES.txt
 conversation_control.egg-info/dependency_links.txt
+conversation_control.egg-info/pyproject
 conversation_control.egg-info/top_level.txt

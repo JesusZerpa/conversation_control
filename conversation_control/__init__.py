@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from langchain.chains import LLMChain,SequentialChain,ConversationChain
 from typing import Dict
-
+from dataclasses import asdict
 
 class ConversationState:
     def __init__(self,conversation):
@@ -32,7 +32,7 @@ class ConversationState:
 
 
 class ConversationControl:
-    def __init__(self,name,session,models,force_outputs=[]):
+    def __init__(self,name,session,models,force_outputs=[],bool_keys=["yes","no"]):
         self.name=name
         self.handlers={}
         self.checkers={}
@@ -44,6 +44,7 @@ class ConversationControl:
         self.session=session
         self.max_intents=3
         self.force_outputs=[]
+        self.positive_positive,self.negative_key=bool_keys
         """
         states:{
             "id":"name",
@@ -54,7 +55,7 @@ class ConversationControl:
         with session() as sess:
             store=sess.query(self.modelStore).filter(
                 self.modelStore.name==name).first()
-            self.store=store.id
+            self.store=asdict(store)
         self.states={
         }
         self.global_handlers=[]
@@ -77,20 +78,25 @@ class ConversationControl:
             self.chain.control=self
         return wrapper
 
-    def process_handler(self,data):
-        event=self.get_event("is_bni_request")
+    def process_handler(self,name, data):
+        event=self.get_event(name)
         if event:
-            if not data["_is_bni_request"]:
+            if not self.observation[f"{name}"]:
                 if event["negative_response"]:
                     data["response"]=event["negative_response"]
                 if event["negative_result"]!=None:
-                    data["_is_bni_request@result"]=event["negative_result"]
+                    try:
+                        self.observation[f"{name}@result"]=json.loads(event["negative_result"])
+                    except:
+                        self.observation[f"{name}@result"]=None
             else:
                 if event["positive_response"]:
                     data["response"]=event["positive_response"]
                 if event["positive_result"]!=None:
-                    data["_is_bni_request@result"]=event["positive_result"]
-
+                    try:
+                        self.observation[f"{name}@result"]=json.loads(event["positive_result"])
+                    except :
+                        self.observation[f"{name}@result"]=None
 
 
 
@@ -108,6 +114,10 @@ class ConversationControl:
             """
             self.handlers[name]=fn
         return wrapper
+    def observe_bool(self,name,ctx):
+        self.observation[name]=False
+        if self.positive_key in ctx[name].lower():
+            self.observation[name]=True
     def check(self,name,callback):
         self.checkers[name]=callback
     def verify(self,output):
@@ -151,47 +161,49 @@ class ConversationControl:
         ConversationStore
         ConversationEvent
         """
-        print("PROCESANDO PARA CONTRUIR DB")
-        print(self.handlers)
-        print(self.states)
-        for handler in self.handlers:
-            with self.session() as sess:
-                #Verificamos los eventos y el store existan en la base de datos
-                results=sess.query(self.modelStore,self.modelEvent).filter(
-                    self.modelStore.name==self.name,
-                    self.modelEvent.handler==handler).join(self.modelEvent).first()
-                print("wwww",results)
-                if not results:
-                    store=self.modelStore(name=self.name)
-                    sess.add(store)
-                    sess.commit()
-                if not results:
-                    event=self.modelEvent(
-                        store=store.id,
-                        handler=handler)
-                    sess.add(event)
-                    sess.commit()
+        with self.session() as sess:
+            for handler in self.handlers:
+                    #Verificamos los eventos y el store existan en la base de datos
+                    results=sess.query(self.modelStore,self.modelEvent).filter(
+                        self.modelStore.name==self.name,
+                        self.modelEvent.handler==handler).join(self.modelEvent).first()
+                    if results:
+                        store,event=results
+                    if not results:
+                        store=self.modelStore(
+                            name=self.name,
+                            assistant=self.name)
+                        sess.add(store)
+                        sess.commit()
+                    if not results:
+                        event=self.modelEvent(
+                            store=store.id,
+                            handler=handler)
+                        sess.add(event)
+                        sess.commit()
 
-        for state_name in self.states:
-            with self.session() as sess:
-                #Verificamos los states y el store existan en la base de datos
-                results=sess.query(
-                    self.modelStore,self.modelState).filter(
-                    self.modelStore.name==self.name,
-                    self.modelState.name==state_name).join(self.modelState).first()
-                #si el store no exite lo crea
-                if not results:
-                    store=self.modelStore(name=name)
-                    sess.add(store)
-                    sess.commit()
-                #si el state no existe lo crea
-                if not results:
-                    state=self.modelState(
-                        store=store.id,
-                        name=state_name)
-            
-                    sess.add(state)
-                    sess.commit()
+            self.store=asdict(store)
+
+            for state_name in self.states:
+                
+                    #Verificamos los states y el store existan en la base de datos
+                    results=sess.query(
+                        self.modelStore,self.modelState).filter(
+                        self.modelStore.name==self.name,
+                        self.modelState.name==state_name).join(self.modelState).first()
+                    #si el store no exite lo crea
+                    if not results:
+                        store=self.modelStore(name=name)
+                        sess.add(store)
+                        sess.commit()
+                    #si el state no existe lo crea
+                    if not results:
+                        state=self.modelState(
+                            store=store.id,
+                            name=state_name)
+                
+                        sess.add(state)
+                        sess.commit()
 
 
 class SequentialChain(SequentialChain):
