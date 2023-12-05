@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from langchain.chains import LLMChain,SequentialChain,ConversationChain
 from typing import Dict
+from langchain.chains.conversation.memory import  ConversationBufferMemory
 from dataclasses import asdict
 print("ESTO ES CONVERSATION CONTROL")
 class ConversationState:
@@ -269,3 +270,16 @@ class ConversationChain(ConversationChain):
         
         return wrapper
 
+class ExtendedConversationBufferMemory(ConversationBufferMemory):
+    extra_variables:List[str] = []
+
+    @property
+    def memory_variables(self) -> List[str]:
+        """Will always return list of memory variables."""
+        return [self.memory_key] + self.extra_variables
+
+    def load_memory_variables(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        """Return buffer with history and extra variables"""
+        d = super().load_memory_variables(inputs)
+        d.update({k:inputs.get(k) for k in self.extra_variables})        
+        return d
