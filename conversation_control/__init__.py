@@ -281,6 +281,6 @@ class ExtendedConversationBufferMemory(ConversationBufferMemory):
 
     def load_memory_variables(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Return buffer with history and extra variables"""
-        d = super().load_memory_variables(inputs)
-        d.update({k:inputs.get(k) for k in self.extra_variables})        
-        return d
+        #d = super().load_memory_variables(inputs)
+        #d.update({k:inputs.get(k) for k in self.extra_variables})        
+        return inputs
