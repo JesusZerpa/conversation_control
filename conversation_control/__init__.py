@@ -55,7 +55,9 @@ class ConversationControl:
         with session() as sess:
             store=sess.query(self.modelStore).filter(
                 self.modelStore.name==name).first()
-            self.store=asdict(store)
+            if store:
+                print("IIIIII",store.__dict__)
+                self.store=store.__dict__
         self.states={
         }
         self.global_handlers=[]
@@ -224,6 +226,7 @@ class AgentWrapper:
 
         self.control=control
     def run(self,query):
+        print("JJJJJJJ")
         return self.chain(query)
 
 class Chain(LLMChain):
@@ -233,16 +236,17 @@ class Chain(LLMChain):
     @classmethod
     def handler(cls,fn):
         
-        def wrapper(instance,*args,**kwargs):
-            
+        def wrapper(instance,*args,**kwargs):            
             response=fn(instance,*args,**kwargs)
-        
             return response
         
         return wrapper
+
+
 class ConversationChain(ConversationChain):
     control:ConversationControl=None
     def _call(self, inputs: Dict[str, str]) -> Dict[str, str]:
+        print("GGGGGGG ",inputs)
         result=super()._call(inputs)
         
         #Aca manejo los handlers configurados en el asistente
