@@ -168,27 +168,26 @@ class ConversationControl:
         store=None
         with self.session() as sess:
             print("HANDLERS: ",self.handlers)
-            for handler in self.handlers:
-                    #Verificamos los eventos y el store existan en la base de datos
-                    results=sess.query(self.modelStore,self.modelEvent).filter(
-                        self.modelStore.name==self.name,
-                        self.modelEvent.handler==handler).join(self.modelEvent).first()
-                    if results:
-                        store,event=results
-                    print("zzzzzzzzzzz ",results)
-                    if not results:
-                        store=self.modelStore(
-                            name=self.name,
-                            assistant=self.name)
-                        sess.add(store)
-                        sess.commit()
-                    print("xxxxxxxxxxxx ",store)
-                    if not results:
-                        event=self.modelEvent(
-                            store=store.id,
-                            handler=handler)
-                        sess.add(event)
-                        sess.commit()
+            #Verificamos los eventos y el store existan en la base de datos
+            results=sess.query(self.modelStore,self.modelEvent).filter(
+                self.modelStore.name==self.name,
+                self.modelEvent.handler.in_(list(self.handlers.keys()))).join(self.modelEvent).first()
+            if results:
+                store,event=results
+            print("zzzzzzzzzzz ",results)
+            if not results and not store:
+                store=self.modelStore(
+                    name=self.name,
+                    assistant=self.name)
+                sess.add(store)
+                sess.commit()
+            print("xxxxxxxxxxxx ",store)
+            if not results and not store:
+                event=self.modelEvent(
+                    store=store.id,
+                    handler=handler)
+                sess.add(event)
+                sess.commit()
 
             self.store=asdict(store)
 
