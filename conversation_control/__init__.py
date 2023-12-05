@@ -2,7 +2,7 @@ from collections import OrderedDict
 from langchain.chains import LLMChain,SequentialChain,ConversationChain
 from typing import Dict
 from dataclasses import asdict
-
+print("ESTO ES CONVERSATION CONTROL")
 class ConversationState:
     def __init__(self,conversation):
         self.conversation=conversation
