@@ -175,7 +175,7 @@ class ConversationControl:
                         self.modelEvent.handler==handler).join(self.modelEvent).first()
                     if results:
                         store,event=results
-                    print("zzzzzzzzzzz ",result)
+                    print("zzzzzzzzzzz ",results)
                     if not results:
                         store=self.modelStore(
                             name=self.name,
