@@ -246,7 +246,7 @@ class Chain(LLMChain):
 class ConversationChain(ConversationChain):
     control:ConversationControl=None
     def _call(self, inputs: Dict[str, str]) -> Dict[str, str]:
-        print("GGGGGGG ",inputs)
+        print("GGGGGGGGGGGGGGGGGG ",inputs)
         result=super()._call(inputs)
         
         #Aca manejo los handlers configurados en el asistente
@@ -257,7 +257,7 @@ class ConversationChain(ConversationChain):
 
     @classmethod
     def handler(cls,fn):
-        
+        print("CCCCCCCCCCCCCCCCCC")
         def wrapper(instance,*args,**kwargs):
 
             response=fn(instance,*args,**kwargs)
