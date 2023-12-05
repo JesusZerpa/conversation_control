@@ -254,6 +254,9 @@ class ConversationChain(ConversationChain):
 
         
         return result
+    def __call__(self,*args,**kwargs):
+        print("vvvvvvvvvvvvvv")
+        return super().___call__(*args,**kwargs)
 
     @classmethod
     def handler(cls,fn):
