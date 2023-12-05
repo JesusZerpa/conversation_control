@@ -3,6 +3,7 @@ from langchain.chains import LLMChain,SequentialChain,ConversationChain
 from typing import Dict
 from langchain.chains.conversation.memory import  ConversationBufferMemory
 from dataclasses import asdict
+from typing import *
 print("ESTO ES CONVERSATION CONTROL")
 class ConversationState:
     def __init__(self,conversation):
